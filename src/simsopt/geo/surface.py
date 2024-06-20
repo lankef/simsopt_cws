@@ -13,6 +13,16 @@ from .._core.dev import SimsoptRequires
 from .plotting import fix_matplotlib_3d
 from .._core.json import GSONable, GSONDecoder
 
+# For is_self_intersecting
+try:
+    from bentley_ottmann.planar import contour_self_intersects
+except ImportError:
+    contour_self_intersects = None
+try:
+    from ground.base import get_context
+except ImportError:
+    get_context = None
+
 __all__ = ['Surface', 'signed_distance_from_surface', 'SurfaceClassifier', 'SurfaceScaled', 'best_nphi_over_ntheta']
 
 
@@ -65,6 +75,35 @@ class Surface(Optimizable):
             nphi, ntheta, nfp=nfp, range=range)
         return cls(quadpoints_phi=quadpoints_phi,
                    quadpoints_theta=quadpoints_theta, nfp=nfp, **kwargs)
+
+    @SimsoptRequires(get_context is not None, "is_self_intersecting requires ground package")
+    @SimsoptRequires(contour_self_intersects is not None, "is_self_intersecting requires the bentley_ottmann package")
+    def is_self_intersecting(self, angle=0., thetas=None):
+        r"""
+        This function computes a cross section of self at the input cylindrical angle.  Then,
+        approximating the cross section as a piecewise linear polyline, the Bentley-Ottmann algorithm
+        is used to check for self-intersecting segments of the cross section.  NOTE: if this function returns False,
+        the surface may still be self-intersecting away from angle.
+
+        Args:
+            angle: the cylindrical angle at which we would like to check whether the surface is self-intersecting.  Note that a
+                    surface might not be self-intersecting at a given angle, but may be self-intersecting elsewhere.  To be certain
+                    that the surface is not self-intersecting, it is recommended to run this check at multiple angles.  Also note
+                    that angle is assumed to be in radians, and not divided by 2*pi.
+            thetas: the number of uniformly spaced points to compute poloidally in a cross section.  If None, then there will be
+                    surface.quadpoints_theta.size uniformly space points in the cross section.
+        Returns:
+            True if surface is self-intersecting at angle, else False.
+        """
+
+        cs = self.cross_section(angle, thetas=thetas)
+        R = np.sqrt(cs[:, 0]**2 + cs[:, 1]**2)
+        Z = cs[:, 2]
+
+        context = get_context()
+        Point, Contour = context.point_cls, context.contour_cls
+        contour = Contour([Point(R[i], Z[i]) for i in range(cs.shape[0])])
+        return contour_self_intersects(contour)
 
     def get_quadpoints(nphi=None,
                        ntheta=None,

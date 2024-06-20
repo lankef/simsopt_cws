@@ -34,7 +34,7 @@ class SquaredFlux(Optimizable):
     """
 
 
-    def __init__(self, surface, field, Btarget=None):
+    def __init__(self, surface, field, Btarget=None, local=False):
 
         self.surface = surface
         if Btarget is not None:
@@ -51,7 +51,8 @@ class SquaredFlux(Optimizable):
         n = self.surface.normal()
         Bcoil = self.field.B().reshape(n.shape)
 
-        return sopp.integral_BdotN(Bcoil, self.Btarget, n)
+        # return sopp.integral_BdotN(Bcoil, self.Btarget, n)
+        return sopp.integral_BdotN(Bcoil, self.Btarget, n, self.local)
 
 
     @derivative_dec
