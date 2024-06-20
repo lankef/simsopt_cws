@@ -1,5 +1,7 @@
 # simsopt
 
+This is an outdated fork of Simsopt for CWS optimization. Used for comparison with QUADCOIL because the `accessibility` branch does not yet have a secular component for surface curves.
+
 ![GitHub](https://img.shields.io/github/license/hiddensymmetries/simsopt)
 [![codecov](https://codecov.io/gh/hiddenSymmetries/simsopt/branch/master/graph/badge.svg?token=ltN6qonZ5p)](https://codecov.io/gh/hiddenSymmetries/simsopt)
 [![DOI](https://zenodo.org/badge/247710081.svg)](https://zenodo.org/badge/latestdoi/247710081)
